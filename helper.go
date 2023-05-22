@@ -96,8 +96,8 @@ func ensureValidHelper(name string, funcValue reflect.Value) {
 
 	funcType := funcValue.Type()
 
-	if funcType.NumOut() != 1 {
-		panic(fmt.Errorf("Helper function must return a string or a SafeString: %s", name))
+	if funcType.NumOut() != 2 {
+		panic(fmt.Errorf("Helper function must return a string or a SafeString and an error : %s", name))
 	}
 
 	// @todo Check if first returned value is a string, SafeString or interface{} ?
@@ -310,121 +310,121 @@ func (options *Options) isIncludableZero() bool {
 //
 
 // #if block helper
-func ifHelper(conditional interface{}, options *Options) interface{} {
+func ifHelper(conditional interface{}, options *Options) (interface{}, error) {
 	if options.isIncludableZero() || IsTrue(conditional) {
-		return options.Fn()
+		return options.Fn(), nil
 	}
 
-	return options.Inverse()
+	return options.Inverse(), nil
 }
 
-func ifGtHelper(a, b interface{}, options *Options) interface{} {
+func ifGtHelper(a, b interface{}, options *Options) (interface{}, error) {
 	var aFloat, bFloat float64
 	var err error
 
 	if aFloat, err = floatValue(a); err != nil {
 		log.WithError(err).Errorf("failed to convert value to float '%v'", a)
-		return options.Inverse()
+		return options.Inverse(), nil
 	}
 	if bFloat, err = floatValue(b); err != nil {
 		log.WithError(err).Errorf("failed to convert value to float '%v'", b)
-		return options.Inverse()
+		return options.Inverse(), nil
 	}
 
 	if aFloat > bFloat {
-		return options.Fn()
+		return options.Fn(), nil
 	}
 	// Evaluate possible else condition.
-	return options.Inverse()
+	return options.Inverse(), nil
 }
 
-func ifLtHelper(a, b interface{}, options *Options) interface{} {
+func ifLtHelper(a, b interface{}, options *Options) (interface{}, error) {
 	var aFloat, bFloat float64
 	var err error
 
 	if aFloat, err = floatValue(a); err != nil {
 		log.WithError(err).Errorf("failed to convert value to float '%v'", a)
-		return options.Inverse()
+		return options.Inverse(), nil
 	}
 	if bFloat, err = floatValue(b); err != nil {
 		log.WithError(err).Errorf("failed to convert value to float '%v'", b)
-		return options.Inverse()
+		return options.Inverse(), nil
 	}
 
 	if aFloat < bFloat {
-		return options.Fn()
+		return options.Fn(), nil
 	}
 	// Evaluate possible else condition.
-	return options.Inverse()
+	return options.Inverse(), nil
 }
 
-func ifEqHelper(a, b interface{}, options *Options) interface{} {
+func ifEqHelper(a, b interface{}, options *Options) (interface{}, error) {
 	var aFloat, bFloat float64
 	var err error
 
 	if aFloat, err = floatValue(a); err != nil {
 		log.WithError(err).Errorf("failed to convert value to float '%v'", a)
-		return options.Inverse()
+		return options.Inverse(), nil
 	}
 	if bFloat, err = floatValue(b); err != nil {
 		log.WithError(err).Errorf("failed to convert value to float '%v'", b)
-		return options.Inverse()
+		return options.Inverse(), nil
 	}
 
 	if aFloat == bFloat {
-		return options.Fn()
+		return options.Fn(), nil
 	}
 	// Evaluate possible else condition.
-	return options.Inverse()
+	return options.Inverse(), nil
 }
 
 // ifMatchesRegexStr is helper function which does a regex match, where a is the expression to compile and
 // b is the string to match against.
-func ifMatchesRegexStr(a, b interface{}, options *Options) interface{} {
+func ifMatchesRegexStr(a, b interface{}, options *Options) (interface{}, error) {
 	exp := Str(a)
 	match := Str(b)
 
 	re, err := regexp.Compile(exp)
 	if err != nil {
 		log.WithError(err).Errorf("failed to compile regex '%v'", a)
-		return options.Inverse()
+		return options.Inverse(), nil
 	}
 
 	if re.MatchString(match) {
-		return options.Fn()
+		return options.Fn(), nil
 	}
-	return options.Inverse()
+	return options.Inverse(), nil
 }
 
-func pluralizeHelper(count, plural, singular interface{}) interface{} {
+func pluralizeHelper(count, plural, singular interface{}) (interface{}, error) {
 	if c, err := floatValue(count); err != nil || c <= 1 {
-		return singular
+		return singular, nil
 	}
-	return plural
+	return plural, nil
 }
 
 // #unless block helper
-func unlessHelper(conditional interface{}, options *Options) interface{} {
+func unlessHelper(conditional interface{}, options *Options) (interface{}, error) {
 	if options.isIncludableZero() || IsTrue(conditional) {
-		return options.Inverse()
+		return options.Inverse(), nil
 	}
 
-	return options.Fn()
+	return options.Fn(), nil
 }
 
 // #with block helper
-func withHelper(context interface{}, options *Options) interface{} {
+func withHelper(context interface{}, options *Options) (interface{}, error) {
 	if IsTrue(context) {
-		return options.FnWith(context)
+		return options.FnWith(context), nil
 	}
 
-	return options.Inverse()
+	return options.Inverse(), nil
 }
 
 // #each block helper
-func eachHelper(context interface{}, options *Options) interface{} {
+func eachHelper(context interface{}, options *Options) (interface{}, error) {
 	if !IsTrue(context) {
-		return options.Inverse()
+		return options.Inverse(), nil
 	}
 
 	result := ""
@@ -474,28 +474,28 @@ func eachHelper(context interface{}, options *Options) interface{} {
 		}
 	}
 
-	return result
+	return result, nil
 }
 
 // #log helper
-func logHelper(message string) interface{} {
+func logHelper(message string) (interface{}, error) {
 	log.Print(message)
-	return ""
+	return "", nil
 }
 
 // #lookup helper
-func lookupHelper(obj interface{}, field string, options *Options) interface{} {
-	return Str(options.Eval(obj, field))
+func lookupHelper(obj interface{}, field string, options *Options) (interface{}, error) {
+	return Str(options.Eval(obj, field)), nil
 }
 
 // #equal helper
 // Ref: https://github.com/aymerick/raymond/issues/7
-func equalHelper(a interface{}, b interface{}, options *Options) interface{} {
+func equalHelper(a interface{}, b interface{}, options *Options) (interface{}, error) {
 	if Str(a) == Str(b) {
-		return options.Fn()
+		return options.Fn(), nil
 	}
 
-	return ""
+	return "", nil
 }
 
 // floatValue attempts to convert value into a float64 and returns an error if it fails.

@@ -67,7 +67,7 @@ var builtinsTests = []Test{
 		"#if - if with function shows the contents when function returns true",
 		"{{#if goodbye}}GOODBYE {{/if}}cruel {{world}}!",
 		map[string]interface{}{
-			"goodbye": func() bool { return true },
+			"goodbye": func() (bool, error) { return true, nil },
 			"world":   "world",
 		},
 		nil, nil, nil,
@@ -77,7 +77,7 @@ var builtinsTests = []Test{
 		"#if - if with function shows the contents when function returns string",
 		"{{#if goodbye}}GOODBYE {{/if}}cruel {{world}}!",
 		map[string]interface{}{
-			"goodbye": func() string { return "world" },
+			"goodbye": func() (string, error) { return "world", nil },
 			"world":   "world",
 		},
 		nil, nil, nil,
@@ -87,7 +87,7 @@ var builtinsTests = []Test{
 		"#if - if with function does not show the contents when returns false",
 		"{{#if goodbye}}GOODBYE {{/if}}cruel {{world}}!",
 		map[string]interface{}{
-			"goodbye": func() bool { return false },
+			"goodbye": func() (bool, error) { return false, nil },
 			"world":   "world",
 		},
 		nil, nil, nil,
@@ -97,7 +97,7 @@ var builtinsTests = []Test{
 		"#if - if with function does not show the contents when returns undefined",
 		"{{#if goodbye}}GOODBYE {{/if}}cruel {{world}}!",
 		map[string]interface{}{
-			"goodbye": func() interface{} { return nil },
+			"goodbye": func() (interface{}, error) { return nil, nil },
 			"world":   "world",
 		},
 		nil, nil, nil,
@@ -114,7 +114,7 @@ var builtinsTests = []Test{
 		"#with - with with function argument",
 		"{{#with person}}{{first}} {{last}}{{/with}}",
 		map[string]interface{}{
-			"person": func() map[string]string { return map[string]string{"first": "Alan", "last": "Johnson"} },
+			"person": func() (map[string]string, error) { return map[string]string{"first": "Alan", "last": "Johnson"}, nil },
 		}, nil, nil, nil,
 		"Alan Johnson",
 	},
@@ -254,8 +254,8 @@ var builtinsTests = []Test{
 	{
 		"#each - each with function argument (1)",
 		"{{#each goodbyes}}{{text}}! {{/each}}cruel {{world}}!",
-		map[string]interface{}{"goodbyes": func() []map[string]string {
-			return []map[string]string{{"text": "goodbye"}, {"text": "Goodbye"}, {"text": "GOODBYE"}}
+		map[string]interface{}{"goodbyes": func() ([]map[string]string, error) {
+			return []map[string]string{{"text": "goodbye"}, {"text": "Goodbye"}, {"text": "GOODBYE"}}, nil
 		}, "world": "world"},
 		nil, nil, nil,
 		"goodbye! Goodbye! GOODBYE! cruel world!",

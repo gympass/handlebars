@@ -6,10 +6,9 @@ import (
 	"github.com/mailgun/raymond/v2"
 )
 
-//
 // Those tests come from:
-//   https://github.com/wycats/handlebars.js/blob/master/spec/subexpression.js
 //
+//	https://github.com/wycats/handlebars.js/blob/master/spec/subexpression.js
 var subexpressionsTests = []Test{
 	{
 		"arg-less helper",
@@ -17,11 +16,11 @@ var subexpressionsTests = []Test{
 		map[string]interface{}{},
 		nil,
 		map[string]interface{}{
-			"foo": func(val string) string {
-				return val + val
+			"foo": func(val string) (string, error) {
+				return val + val, nil
 			},
-			"bar": func() string {
-				return "LOL"
+			"bar": func() (string, error) {
+				return "LOL", nil
 			},
 		},
 		nil,
@@ -45,8 +44,8 @@ var subexpressionsTests = []Test{
 		map[string]interface{}{"bar": "LOL", "baz": map[string]string{"bat": "foo!", "bar": "bar!"}},
 		nil,
 		map[string]interface{}{
-			"blog": func(p, p2, p3 string) string {
-				return "val is " + p + ", " + p2 + " and " + p3
+			"blog": func(p, p2, p3 string) (string, error) {
+				return "val is " + p + ", " + p2 + " and " + p3, nil
 			},
 			"equal": equalHelper,
 		},
@@ -142,8 +141,8 @@ var subexpressionsTests = []Test{
 		map[string]interface{}{},
 		nil,
 		map[string]interface{}{
-			"blog": func(options *raymond.Options) string {
-				return "val is " + options.HashStr("fun")
+			"blog": func(options *raymond.Options) (string, error) {
+				return "val is " + options.HashStr("fun"), nil
 			},
 			"equal": equalHelper,
 		},
@@ -156,11 +155,11 @@ var subexpressionsTests = []Test{
 		map[string]interface{}{},
 		nil,
 		map[string]interface{}{
-			"input": func(options *raymond.Options) raymond.SafeString {
-				return raymond.SafeString(`<input aria-label="` + options.HashStr("aria-label") + `" placeholder="` + options.HashStr("placeholder") + `" />`)
+			"input": func(options *raymond.Options) (raymond.SafeString, error) {
+				return raymond.SafeString(`<input aria-label="` + options.HashStr("aria-label") + `" placeholder="` + options.HashStr("placeholder") + `" />`), nil
 			},
-			"t": func(param string) raymond.SafeString {
-				return raymond.SafeString(param)
+			"t": func(param string) (raymond.SafeString, error) {
+				return raymond.SafeString(param), nil
 			},
 		},
 		nil,
@@ -172,11 +171,11 @@ var subexpressionsTests = []Test{
 		map[string]map[string]string{"item": {"field": "Name", "placeholder": "Example User"}},
 		nil,
 		map[string]interface{}{
-			"input": func(options *raymond.Options) raymond.SafeString {
-				return raymond.SafeString(`<input aria-label="` + options.HashStr("aria-label") + `" placeholder="` + options.HashStr("placeholder") + `" />`)
+			"input": func(options *raymond.Options) (raymond.SafeString, error) {
+				return raymond.SafeString(`<input aria-label="` + options.HashStr("aria-label") + `" placeholder="` + options.HashStr("placeholder") + `" />`), nil
 			},
-			"t": func(param string) raymond.SafeString {
-				return raymond.SafeString(param)
+			"t": func(param string) (raymond.SafeString, error) {
+				return raymond.SafeString(param), nil
 			},
 		},
 		nil,
@@ -190,11 +189,11 @@ var subexpressionsTests = []Test{
 	{
 		"subexpression functions on the context",
 		"{{foo (bar)}}!",
-		map[string]interface{}{"bar": func() string { return "LOL" }},
+		map[string]interface{}{"bar": func() (string, error) { return "LOL", nil }},
 		nil,
 		map[string]interface{}{
-			"foo": func(val string) string {
-				return val + val
+			"foo": func(val string) (string, error) {
+				return val + val, nil
 			},
 		},
 		nil,

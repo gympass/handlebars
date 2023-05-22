@@ -1,6 +1,9 @@
 package raymond
 
-import "fmt"
+import (
+	"errors"
+	"fmt"
+)
 
 func Example() {
 	source := "<h1>{{title}}</h1><p>{{body.content}}</p>"
@@ -63,8 +66,8 @@ func Example_struct() {
 		},
 	}
 
-	RegisterHelper("fullName", func(person Person) string {
-		return person.FirstName + " " + person.LastName
+	RegisterHelper("fullName", func(person Person) (string, error) {
+		return person.FirstName + " " + person.LastName, nil
 	})
 
 	output := MustRender(source, ctx)
@@ -97,6 +100,33 @@ func ExampleRender() {
 
 	fmt.Print(output)
 	// Output: <h1>foo</h1><p>bar</p>
+}
+
+func ExampleParseWithError() {
+	tpl := "<h1>{{title}}</h1><p>{{body.content}} {{ errorHelper 'ok' }}</p>"
+
+	ctx := map[string]interface{}{
+		"title": "foo",
+		"body":  map[string]string{"content": "bar"},
+	}
+
+	RegisterHelper("errorHelper", func(text string) (string, error) {
+		return "", errors.New(fmt.Sprintf("this is an error: %s", text))
+	})
+
+	// render template with context
+	template, err := Parse(tpl)
+	if err != nil {
+		panic(err)
+	}
+
+	output, err := template.Exec(ctx)
+	if err == nil {
+		panic(errors.New("an error from the helper was expected"))
+	}
+
+	fmt.Print(output)
+	// Output: 
 }
 
 func ExampleMustRender() {

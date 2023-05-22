@@ -17,7 +17,7 @@ func BenchmarkArguments(b *testing.B) {
 	}
 
 	tpl := MustParse(source)
-	tpl.RegisterHelper("foo", func(a, b, c, d interface{}) string { return "" })
+	tpl.RegisterHelper("foo", func(a, b, c, d interface{}) (string, error) { return "", nil })
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {

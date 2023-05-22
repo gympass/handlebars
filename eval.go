@@ -659,9 +659,21 @@ func (v *evalVisitor) callFunc(name string, funcVal reflect.Value, options *Opti
 		args[numIn+vaCount-1] = reflect.ValueOf(options)
 	}
 
-	result := funcVal.Call(args)
+	results := funcVal.Call(args)
 
-	return result[0]
+	v.panicOnError(results[1])
+
+	return results[0]
+}
+
+func (*evalVisitor) panicOnError(err reflect.Value) {
+	if !err.IsNil() {
+		errorType := reflect.TypeOf((*error)(nil)).Elem()
+
+		if err.Type().AssignableTo(errorType) {
+			panic(err.Interface())
+		}
+	}
 }
 
 // callHelper invoqs helper function for given expression node

@@ -10,6 +10,7 @@ var evalTests = []Test{
 		"this is content",
 		nil, nil, nil, nil,
 		"this is content",
+		
 	},
 	{
 		"checks path in parent contexts",
@@ -61,8 +62,8 @@ var evalTests = []Test{
 			"body":  "I have so many things to say!",
 		},
 		nil,
-		map[string]interface{}{"bold": func(options *Options) SafeString {
-			return SafeString(`<div class="mybold">` + options.Fn() + "</div>")
+		map[string]interface{}{"bold": func(options *Options) (SafeString, error) {
+			return SafeString(`<div class="mybold">` + options.Fn() + "</div>"), nil
 		}},
 		nil,
 		`My new blog post - <div class="mybold">I have so many things to say!</div>`,
@@ -88,7 +89,7 @@ var evalErrors = []Test{
 	{
 		"functions with wrong number of arguments",
 		`{{foo "bar"}}`,
-		map[string]interface{}{"foo": func(a string, b string) string { return "foo" }},
+		map[string]interface{}{"foo": func(a string, b string) (string, error) { return "foo", nil }},
 		nil, nil, nil,
 		"Helper 'foo' called with wrong number of arguments, needed 2 but got 1",
 	},
@@ -97,14 +98,14 @@ var evalErrors = []Test{
 		"{{foo}}",
 		map[string]interface{}{"foo": func() {}},
 		nil, nil, nil,
-		"Helper function must return a string or a SafeString",
+		"Helper function must return a string or a SafeString and an error",
 	},
 	{
 		"functions with wrong number of returned values (2)",
 		"{{foo}}",
 		map[string]interface{}{"foo": func() (string, bool, string) { return "foo", true, "bar" }},
 		nil, nil, nil,
-		"Helper function must return a string or a SafeString",
+		"Helper function must return a string or a SafeString and an error",
 	},
 }
 
@@ -230,8 +231,8 @@ func TestEvalStructTag(t *testing.T) {
 type TestFoo struct {
 }
 
-func (t *TestFoo) Subject() string {
-	return "foo"
+func (t *TestFoo) Subject() (string, error) {
+	return "foo", nil
 }
 
 func TestEvalMethod(t *testing.T) {
@@ -251,12 +252,12 @@ func TestEvalMethod(t *testing.T) {
 type TestBar struct {
 }
 
-func (t *TestBar) Subject() interface{} {
-	return testBar
+func (t *TestBar) Subject() (interface{}, error) {
+	return testBar, nil
 }
 
-func testBar() string {
-	return "bar"
+func testBar() (string, error) {
+	return "bar", nil
 }
 
 func TestEvalMethodReturningFunc(t *testing.T) {

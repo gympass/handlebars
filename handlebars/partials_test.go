@@ -20,8 +20,8 @@ var partialsTests = []Test{
 		"Dudes: {{#dudes}}{{> (partial)}}{{/dudes}}",
 		map[string]interface{}{"dudes": []map[string]string{{"name": "Yehuda", "url": "http://yehuda"}, {"name": "Alan", "url": "http://alan"}}},
 		nil,
-		map[string]interface{}{"partial": func() string {
-			return "dude"
+		map[string]interface{}{"partial": func() (string, error) {
+			return "dude", nil
 		}},
 		map[string]string{"dude": "{{name}} ({{url}}) "},
 		"Dudes: Yehuda (http://yehuda) Alan (http://alan) ",

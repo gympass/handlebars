@@ -140,7 +140,7 @@ var mustacheLambdasTests = []Test{
 	{
 		"Interpolation",
 		"Hello, {{lambda}}!",
-		map[string]interface{}{"lambda": func() string { return "world" }},
+		map[string]interface{}{"lambda": func() (string, error) { return "world", nil }},
 		nil, nil, nil,
 		"Hello, world!",
 	},
@@ -159,9 +159,9 @@ var mustacheLambdasTests = []Test{
 	{
 		"Interpolation - Multiple Calls",
 		"{{lambda}} == {{{lambda}}} == {{lambda}}",
-		map[string]interface{}{"lambda": func() string {
+		map[string]interface{}{"lambda": func() (string, error) {
 			musTestLambdaInterMult++
-			return Str(musTestLambdaInterMult)
+			return Str(musTestLambdaInterMult), nil
 		}},
 		nil, nil, nil,
 		"1 == 2 == 3",
@@ -170,7 +170,7 @@ var mustacheLambdasTests = []Test{
 	{
 		"Escaping",
 		"<{{lambda}}{{{lambda}}}",
-		map[string]interface{}{"lambda": func() string { return ">" }},
+		map[string]interface{}{"lambda": func() (string, error) { return ">", nil }},
 		nil, nil, nil,
 		"<&gt;>",
 	},
@@ -206,8 +206,8 @@ var mustacheLambdasTests = []Test{
 	{
 		"Section - Multiple Calls",
 		"{{#lambda}}FILE{{/lambda}} != {{#lambda}}LINE{{/lambda}}",
-		map[string]interface{}{"lambda": func(options *Options) string {
-			return "__" + options.Fn() + "__"
+		map[string]interface{}{"lambda": func(options *Options) (string, error) {
+			return "__" + options.Fn() + "__", nil
 		}},
 		nil, nil, nil,
 		"__FILE__ != __LINE__",

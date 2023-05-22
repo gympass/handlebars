@@ -17,36 +17,36 @@ const (
 // Helpers
 //
 
-func barHelper(options *Options) string { return "bar" }
+func barHelper(options *Options) (string, error) { return "bar", nil }
 
-func echoHelper(str string, nb int) string {
+func echoHelper(str string, nb int) (string, error) {
 	result := ""
 	for i := 0; i < nb; i++ {
 		result += str
 	}
 
-	return result
+	return result, nil
 }
 
-func boolHelper(b bool) string {
+func boolHelper(b bool) (string, error) {
 	if b {
-		return "yes it is"
+		return "yes it is", nil
 	}
 
-	return "absolutely not"
+	return "absolutely not", nil
 }
 
-func gnakHelper(nb int) string {
+func gnakHelper(nb int) (string, error) {
 	result := ""
 	for i := 0; i < nb; i++ {
 		result += "GnAK!"
 	}
 
-	return result
+	return result, nil
 }
 
-func variadicHelper(values ...string) string {
-	return strings.Join(values, ",")
+func variadicHelper(values ...string) (string, error) {
+	return strings.Join(values, ","), nil
 }
 
 //
@@ -622,7 +622,7 @@ func TestHelper(t *testing.T) {
 }
 
 func TestRemoveHelper(t *testing.T) {
-	RegisterHelper("testremovehelper", func() string { return "" })
+	RegisterHelper("testremovehelper", func() (string, error) { return "", nil })
 	if _, ok := helpers["testremovehelper"]; !ok {
 		t.Error("Failed to register global helper")
 	}
@@ -643,13 +643,13 @@ type Author struct {
 }
 
 func TestHelperCtx(t *testing.T) {
-	RegisterHelper("template", func(name string, options *Options) SafeString {
+	RegisterHelper("template", func(name string, options *Options) (SafeString, error) {
 		context := options.Ctx()
 
 		template := name + " - {{ firstName }} {{ lastName }}"
 		result, _ := Render(template, context)
 
-		return SafeString(result)
+		return SafeString(result), nil
 	})
 
 	template := `By {{ template "namefile" }}`
